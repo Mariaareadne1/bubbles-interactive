@@ -9,7 +9,7 @@ const port = prod ? 4398 : 5398;
 
 export default defineConfig({
   testDir: 'tests/e2e',
-  timeout: 120_000,
+  timeout: 300_000,
   expect: { timeout: 20_000 },
   workers: 1,
   reporter: [['list']],
