@@ -9,7 +9,7 @@ const browser = await chromium.launch({ args: ['--use-angle=metal', '--enable-gp
 const page = await browser.newPage({ viewport: { width: Number(process.env.W ?? 900), height: Number(process.env.H ?? 700) }, deviceScaleFactor: Number(process.env.DPR ?? 1) });
 page.on('pageerror', (e) => console.log('[pageerror]', e.message));
 await page.goto(`${process.env.BUBBLES_URL ?? 'http://localhost:5398/'}?${process.env.QUERY ?? ''}`);
-await page.waitForFunction(() => (window.__engine && window.__views) || (window.__bubbles && !window.__bubbles.store.get().loading), null, { timeout: 90000 });
+await page.waitForFunction(() => (window.__engine && window.__views) || (window.__bubbles && !window.__bubbles.store.get().loading), null, { timeout: 240000 });
 await page.waitForTimeout(1500);
 await page.evaluate(() => {
   const e = window.__engine ?? window.__bubbles.engine;

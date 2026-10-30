@@ -58,4 +58,6 @@ The machine this was built on was running at a load average of 60–150 from oth
 - Bubbles that bump only wobble; they don't deform against each other into the flat shared wall two touching real bubbles make (they merge before that would be needed).
 - The kitten bats at the air above it, not at the real butterfly's position.
 - An undo after a bubble has popped by itself can bring that bubble back (world events amend the present; earlier snapshots still hold it).
+- The demo in `docs/media` ran long (31 s, ~24 fps) because the machine was overloaded while recording; `scripts/demo.mjs` is paced for about 19 s and should be re-recorded on a quiet machine. The film-over-time filmstrip from `scripts/gallery.mjs` wasn't generated for the same reason, and the passenger sheet's "from behind" row is blocked by test bubbles (the script is fixed; the image predates the fix).
+- The end-to-end suite has passed test by test across dev and production runs, but never in a single clean pass: on this machine (load 60–150) some runs timed out on the first page load or on the 16-bubble frame-time budget (287 ms frames at load ~90).
 - Not deployed — waiting for the owner's go-ahead (`npx vercel --prod`).

@@ -12,12 +12,17 @@ BUBBLES is a piece in a family by the same hand — [MEADOW](https://github.com/
 - **Pop** mode: swipe across bubbles and every one you touch pops.
 - **Click a friend in the garden** to give it a name (🎲 for a suggestion), **Bubble up** (a new bubble forms round it and it floats back up, asleep again), or **Remove** it (it waves and fades). Drag to move it.
 
-Demo (≈19 s, recorded by the app's own recorder): [`docs/media/bubbles-demo.mp4`](docs/media/bubbles-demo.mp4)
+Demo (recorded by the app's own recorder; 31 s and ~24 fps because it was recorded on a heavily loaded machine — the script is paced for ≈19 s): [`docs/media/bubbles-demo.mp4`](docs/media/bubbles-demo.mp4)
+
+![Two bubbles, close up, over light and dark parts of the garden](docs/media/02-bubble-closeups.jpg)
+
+![A pop, frame by frame: the film bursts open, the bunny wakes, takes its petal and drifts down](docs/media/04-pop-strip.jpg)
+
+![The six passengers awake in the garden, and asleep in their bubbles](docs/media/05-passengers.jpg)
 
 | | |
 |---|---|
-| ![Two bubbles, close up, over light and dark parts of the garden](docs/media/02-bubble-closeups.jpg) | ![The film swirling over time](docs/media/03-film-over-time.jpg) |
-| ![A pop, frame by frame](docs/media/04-pop-strip.jpg) | ![The six passengers, awake and asleep](docs/media/05-passengers.jpg) |
+| ![The end of the demo: a garden full of friends](docs/media/demo-end.jpg) | ![On a phone](docs/media/08-mobile.jpg) |
 
 ## Controls
 
