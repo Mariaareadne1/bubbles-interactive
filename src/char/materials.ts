@@ -238,7 +238,7 @@ void main() {
   // the star glows softly from within, and twinkles
   lit = mix(lit, base * (1.05 + 0.25 * uLook.y), glow * (0.45 + 0.3 * uLook.y));
   // inside a bubble: a breath of the film's cool tint
-  lit = mix(lit, lit * vec3(0.95, 0.97, 1.04), uLook.z);
+  lit = mix(lit, lit * vec3(0.97, 0.98, 1.03) * 1.04, uLook.z);
   lit += vec3(0.12, 0.3, 0.75) * uHighlight * pow(1.0 - max(dot(N, V), 0.0), 2.5) * 0.6;
   gl_FragColor = vec4(lit, 1.0);
 }

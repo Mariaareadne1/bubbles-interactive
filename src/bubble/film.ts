@@ -191,7 +191,7 @@ void main() {
   vec3 film = filmPaint(vDir, ndv, thin);
   float rim = pow(1.0 - ndv, 2.0);
   vec3 env = textureCube(uEnv, reflect(-V, N)).rgb;
-  float a = (0.02 + 0.22 * rim) * (1.0 - thin * 0.7);
+  float a = (0.012 + 0.2 * rim) * (1.0 - thin * 0.7);
   vec3 rgb = film * a * 0.8 + env * film * (0.05 + 0.3 * rim) * 0.5;
   a += ring * 0.4;
   rgb += film * ring * 0.5;
@@ -237,14 +237,14 @@ void main() {
   vec3 refl = env * film * fres * 1.15;
 
   // the interference wash: strongest toward the rim, broken a little like a brush laid wet
-  float wash = (0.085 + 0.5 * pow(rim, 0.9)) * (0.85 + 0.3 * vnoise3(vDir * 7.0 + uSeed * 9.0));
+  float wash = (0.055 + 0.52 * pow(rim, 0.9)) * (0.85 + 0.3 * vnoise3(vDir * 7.0 + uSeed * 9.0));
   wash *= 1.0 - thin * 0.75;
   // a thin painted outline where the film turns edge-on
   float line = smoothstep(0.2, 0.04, ndv) * (1.0 - thin * 0.5);
   vec3 lineCol = mix(film, pow(vec3(0.70, 0.72, 0.92), vec3(2.2)), 0.45);
 
   // the window highlight: four soft panes, up and to the left like the sun
-  vec3 W = normalize(uSunDir + vec3(0.0, 0.25, 0.25));
+  vec3 W = normalize(uSunDir + vec3(-0.35, 0.35, -0.55));
   vec3 U = normalize(cross(W, vec3(0.0, 1.0, 0.0)));
   vec3 Vv = cross(U, W);
   float rw = dot(R, W);
