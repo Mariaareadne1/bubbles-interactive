@@ -136,6 +136,37 @@ test.describe('BUBBLES', () => {
     expect(pageErrors(page)).toEqual([]);
   });
 
+  test('a circle drawn round friends on the lawn catches them in one bubble; undo lets them go', async ({ page }) => {
+    await openGarden(page);
+    await page.evaluate(() => {
+      window.__bubbles!.app.loadDoc({
+        version: 1,
+        bubbles: [],
+        garden: [
+          { id: 'c1', kind: 'bunny', seed: 6, x: -0.5, z: 1.6, heading: -1.5, name: 'Bun' },
+          { id: 'c2', kind: 'chick', seed: 13, x: 0.5, z: 1.7, heading: -1.5 },
+          { id: 'far', kind: 'star', seed: 5, x: 4, z: 2.5, heading: -1.5 },
+        ],
+      });
+    });
+    await advance(page, 0.5);
+    const a = await friendScreen(page, 'c1');
+    const b = await friendScreen(page, 'c2');
+    const id = await drawBubble(page, { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, Math.hypot(a.x - b.x, a.y - b.y) / 2 + 45);
+    expect(id).not.toBeNull();
+    const doc = await page.evaluate(() => window.__bubbles!.store.doc);
+    expect([...doc.bubbles[0].passengers].sort()).toEqual([13, 6]);
+    expect(doc.bubbles[0].names).toContain('Bun');
+    expect(doc.garden.map((g) => g.id)).toEqual(['far']);
+    // they rise off the lawn into it, then sleep
+    await advance(page, 1.5);
+    expect((await snapshot(page)).bubbles[0].passengers).toHaveLength(2);
+    await page.keyboard.press('Meta+z');
+    expect(await gardenIds(page)).toEqual(expect.arrayContaining(['c1', 'c2', 'far']));
+    expect(await bubbleIds(page)).toEqual([]);
+    expect(pageErrors(page)).toEqual([]);
+  });
+
   test('dragging a passenger moves it', async ({ page }) => {
     await openGarden(page, 'showcase');
     await advance(page, 0.5);

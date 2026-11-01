@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { analyzeLoop, MIN_LOOP_RADIUS, type Pt } from '../../src/interaction/stroke';
+import { analyzeLoop, insideLoop, MIN_LOOP_RADIUS, type Pt } from '../../src/interaction/stroke';
 
 const circle = (cx: number, cy: number, r: number, n = 48, wob = 0): Pt[] =>
   Array.from({ length: n + 1 }, (_, i) => {
@@ -48,3 +48,30 @@ describe('a drawn loop becomes a bubble', () => {
     expect(analyzeLoop([{ x: 0, y: 0 }, { x: 3, y: 2 }]).reason).toBe('short');
   });
 });
+
+describe('what a loop catches', () => {
+  it('knows what is inside a drawn loop, even an unclosed, lumpy one', () => {
+    const loop = circle(300, 300, 80, 48, 0.1).slice(0, 46);
+    expect(insideLoop({ x: 300, y: 300 }, loop)).toBe(true);
+    expect(insideLoop({ x: 350, y: 320 }, loop)).toBe(true);
+    expect(insideLoop({ x: 395, y: 300 }, loop)).toBe(false);
+    expect(insideLoop({ x: 300, y: 100 }, loop)).toBe(false);
+  });
+
+  it('works for a kidney shape drawn round two friends but not the one in its dent', () => {
+    // a C-shape closed across its mouth: the dent is outside
+    const pts: Pt[] = [];
+    for (let i = 0; i <= 40; i++) {
+      const a = 0.6 + (i / 40) * (Math.PI * 2 - 1.2);
+      pts.push({ x: 300 + Math.cos(a) * 100, y: 300 + Math.sin(a) * 100 });
+    }
+    for (let i = 0; i <= 20; i++) {
+      const a = Math.PI * 2 - 0.6 - (i / 20) * (Math.PI * 2 - 1.2);
+      pts.push({ x: 300 + Math.cos(a) * 40, y: 300 + Math.sin(a) * 40 });
+    }
+    expect(insideLoop({ x: 230, y: 300 }, pts)).toBe(true);
+    expect(insideLoop({ x: 300, y: 230 }, pts)).toBe(true);
+    expect(insideLoop({ x: 330, y: 300 }, pts)).toBe(false);
+  });
+});
+

@@ -26,7 +26,12 @@ interface Rider {
   view: CharView;
   seed: number;
   name: string;
+  /** Scooped up off the lawn: where it started, how big it was, and when. */
+  gather?: { from: THREE.Vector3; fromScale: number; t0: number };
 }
+
+/** Seconds to scoop a friend off the lawn into its bubble. */
+export const GATHER_TIME = 0.9;
 
 interface LiveBubble {
   view: BubbleView;
@@ -206,8 +211,10 @@ export class BubbleField {
     }
     const view = new BubbleView(rec.id, seed, this.world, this.env);
     this.views.set(rec.id, view);
+    const used = new Set<Rider>();
     const riders: Rider[] = rec.passengers.map((p, i) => {
-      const lifted = [...this.lifting.values()].find((r) => r.seed === p);
+      const lifted = [...this.lifting.values()].find((r) => r.seed === p && !used.has(r));
+      if (lifted) used.add(lifted);
       const rider = lifted ?? { view: this.makeChar(`${rec.id}-${i}`, kindOf(p), p), seed: p, name: rec.names?.[i] ?? '' };
       rider.view.setFade(1);
       view.inside.add(rider.view.root);
@@ -302,6 +309,7 @@ export class BubbleField {
     const n = lb.riders.length;
     const r = lb.view.radius;
     lb.view.inside.rotation.y = t * 0.22 + b.seed * 6.283;
+    lb.view.inside.updateWorldMatrix(true, false);
     lb.riders.forEach((rider, i) => {
       const kind = rider.view.kind;
       const h = heightOf(kind);
@@ -315,6 +323,29 @@ export class BubbleField {
       root.rotation.set(0, n > 1 ? -a + Math.PI + 0.6 : 0.4, 0);
       root.scale.setScalar(s);
       rider.view.setInBubble(1);
+      const g = rider.gather;
+      if (g) {
+        const u = Math.min(1, (t - g.t0) / (this.reducedMotion ? GATHER_TIME * 0.5 : GATHER_TIME));
+        if (u >= 1) delete rider.gather;
+        else {
+          // scooped off the lawn: up in a little arc, shrinking to fit, surprised — then asleep
+          const e = u * u * (3 - 2 * u);
+          const from = lb.view.inside.worldToLocal(g.from.clone());
+          root.position.lerpVectors(from, root.position, e);
+          root.position.y += Math.sin(u * Math.PI) * 0.25;
+          root.scale.setScalar(g.fromScale + (s - g.fromScale) * e);
+          if (u < 0.7) {
+            const p = restPose();
+            p.eyes = 1;
+            p.squash = -0.15 * Math.sin(u * Math.PI);
+            p.pawL = p.pawR = 0.8;
+            p.wing = 0.5 + 0.5 * Math.sin(t * 40);
+            p.tail = Math.sin(t * 12) * 0.5;
+            rider.view.apply(p);
+            return;
+          }
+        }
+      }
       rider.view.apply(asleepPose(t + i * 1.3, idHash(String(rider.seed))));
     });
   }
@@ -435,15 +466,42 @@ export class BubbleField {
     return { landed };
   }
 
-  /** Wrap a garden passenger in a new bubble; returns the bubble record to commit. */
+  /** Garden friends a drawn loop could catch: who, and the middle of their body in the world. */
+  catchable(): { id: string; point: THREE.Vector3 }[] {
+    const out: { id: string; point: THREE.Vector3 }[] = [];
+    for (const g of this.garden.values()) {
+      if (g.mode.kind !== 'home') continue;
+      const root = g.view.root;
+      out.push({ id: g.rec.id, point: root.position.clone().add(new THREE.Vector3(0, g.view.height * root.scale.y * 0.45, 0)) });
+    }
+    return out;
+  }
+
+  /**
+   * Scoop garden friends into a new bubble: each will rise off the lawn into
+   * it. Returns the new bubble's id; the app commits the document change.
+   */
+  capture(gardenIds: readonly string[], id = newId('b')): string {
+    for (const gid of gardenIds) {
+      const g = this.garden.get(gid);
+      if (!g || g.mode.kind === 'leaving' || g.mode.kind === 'falling') continue;
+      const root = g.view.root;
+      this.lifting.set(gid, {
+        view: g.view, seed: g.rec.seed, name: g.rec.name ?? '',
+        gather: { from: root.getWorldPosition(new THREE.Vector3()), fromScale: root.scale.x, t0: this.time },
+      });
+    }
+    this.expectFresh(id);
+    return id;
+  }
+
+  /** Wrap one garden passenger in a new bubble just above it; returns the bubble record to commit. */
   bubbleUp(gardenId: string): BubbleRecord | null {
     const g = this.garden.get(gardenId);
     if (!g || g.mode.kind === 'leaving' || g.mode.kind === 'falling') return null;
     const r = 0.62;
     const p = g.view.root.position;
-    const id = newId('b');
-    this.lifting.set(gardenId, { view: g.view, seed: g.rec.seed, name: g.rec.name ?? '' });
-    this.expectFresh(id);
+    const id = this.capture([gardenId]);
     const [x, y, z] = containPoint(p.x, p.y + r + 0.1, p.z, r);
     return { id, r, passengers: [g.rec.seed], ...(g.rec.name ? { names: [g.rec.name] } : {}), born: Math.round(this.clock.now), x, y, z };
   }

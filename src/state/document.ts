@@ -137,12 +137,22 @@ export function moveGarden(doc: BubblesDoc, id: string, x: number, z: number, he
   return { ...doc, garden: doc.garden.map((r) => (r.id === id ? { ...r, x, z, heading: heading ?? r.heading } : r)) };
 }
 
-/** A garden passenger is wrapped in a fresh bubble and floats back up, asleep. */
+/**
+ * Garden passengers are wrapped in a fresh bubble and float back up, asleep —
+ * one (Bubble up) or a whole group a loop was drawn around. Names travel with them.
+ */
+export function captureIntoBubble(doc: BubblesDoc, ids: readonly string[], bubble: Omit<BubbleRecord, 'passengers' | 'names'>): BubblesDoc {
+  const caught = ids.map((id) => findGarden(doc, id)).filter((g): g is GardenRecord => !!g).slice(0, MAX_PASSENGERS);
+  if (caught.length === 0 || doc.bubbles.length >= MAX_BUBBLES) return doc;
+  const names = caught.map((g) => g.name ?? '');
+  const rec: BubbleRecord = { ...bubble, passengers: caught.map((g) => g.seed), ...(names.some(Boolean) ? { names } : {}) };
+  const gone = new Set(caught.map((g) => g.id));
+  return { ...doc, garden: doc.garden.filter((x) => !gone.has(x.id)), bubbles: [...doc.bubbles, rec] };
+}
+
+/** A single garden passenger is bubbled back up. */
 export function bubbleUp(doc: BubblesDoc, id: string, bubble: Omit<BubbleRecord, 'passengers' | 'names'>): BubblesDoc {
-  const g = findGarden(doc, id);
-  if (!g || doc.bubbles.length >= MAX_BUBBLES) return doc;
-  const rec: BubbleRecord = { ...bubble, passengers: [g.seed], ...(g.name ? { names: [g.name] } : {}) };
-  return { ...doc, garden: doc.garden.filter((x) => x.id !== id), bubbles: [...doc.bubbles, rec] };
+  return captureIntoBubble(doc, [id], bubble);
 }
 
 export function cleanName(raw: string): string {

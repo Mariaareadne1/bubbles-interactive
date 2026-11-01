@@ -38,6 +38,10 @@ The first passengers used MEADOW's wool (hundreds of rounded puffs unioned over 
 
 Poses are pure functions of kind, seed and time (`src/char/behaviors.ts`), like MEADOW's: asleep (curled, breathing), the fall (a start, then the petal parasol or a twirl, a sway that dies away so it lands exactly under where it popped), and the garden idles — the bunny's nibble / three hops / sit-up-and-look cycle around its home, the chick's three pecks and a peep, the kitten's sit / long stretch / batting the air / nap, and the plants' nods and wiggles. Squash-and-stretch throughout.
 
+## Catching friends
+
+Added after launch, at the owner's request: a loop drawn round friends on the lawn catches them. The app projects each friend's body to the screen and tests it against the drawn loop (even–odd, so a kidney-shaped loop leaves out whoever is in its dent), takes up to four nearest the loop's middle, and commits one undoable edit — `captureIntoBubble` — that moves them from the garden into the new bubble, names and all. Bubble up is now the one-friend case of the same thing. In the view the same characters are scooped off the lawn: over 0.9 s each rises in a small arc from where it stood to its place inside the inflating bubble, shrinking to fit, eyes wide and paws up, then curls up asleep. A loop round nobody blows a bubble with someone new inside, as before.
+
 ## Document and undo
 
 The document is `{ version: 1, bubbles: [{ id, r, passengers: [seed…], names?, born, x, y, z }], garden: [{ id, kind, seed, x, z, heading, name? }] }`, validated on load (clamped, capped at 16 and 24, ids de-duplicated, untrusted names cleaned). Drawing, popping, bubbling up, removing, renaming and moving are undoable commits. World events — a merge, a bubble that popped by itself, where bubbles have drifted to — *amend* the present without an undo step. `born` is wall-clock time, so a bubble reloads as old as it is; one that is already past its life pops a few seconds after the page opens, staggered, rather than all at once. A pop that overflows the garden lets the longest-standing friends wave goodbye.

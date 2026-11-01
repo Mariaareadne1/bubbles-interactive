@@ -2,13 +2,13 @@ import * as THREE from 'three';
 import type { Engine } from '../engine/Engine';
 import type { Store } from '../state/store';
 import {
-  addBubble, bubbleUp, emptyDoc, findGarden, MAX_BUBBLES, moveGarden, newId, newSeed, popBubble, removeGarden,
+  addBubble, bubbleUp, captureIntoBubble, emptyDoc, findGarden, MAX_BUBBLES, moveGarden, newId, newSeed, popBubble, removeGarden,
   renameGarden, replaceBubbles, withPositions, type BubblesDoc,
 } from '../state/document';
 import { saveDoc } from '../state/persistence';
-import { analyzeLoop, type Pt } from '../interaction/stroke';
+import { analyzeLoop, insideLoop, type Pt } from '../interaction/stroke';
 import { distanceAtHeight, groundAt, raycaster, rayFromClient } from '../interaction/rays';
-import { containPoint, R_MAX, R_MIN } from '../bubble/sim';
+import { containPoint, MAX_PASSENGERS, R_MAX, R_MIN } from '../bubble/sim';
 
 /**
  * Application commands. The UI and pointer input call these; they turn intent
@@ -25,6 +25,7 @@ export const MESSAGES = {
   thin: 'Draw a rounder loop — bubbles are round.',
   paper: 'Draw over the garden.',
   full: 'The air is full of bubbles — pop one first.',
+  crowd: 'Only four fit in one bubble — the rest stay put.',
 } as const;
 
 /** How far above the ground a new bubble's lowest point sits (m). */
@@ -85,7 +86,11 @@ export class BubblesApp {
 
   // --- drawing ---------------------------------------------------------------------------------
 
-  /** A finished loop: it becomes a bubble of the drawn size, where it was drawn, with someone asleep inside. */
+  /**
+   * A finished loop: it becomes a bubble of the drawn size, where it was drawn.
+   * Drawn round friends on the lawn, it catches them (up to four) and they
+   * float up inside it; otherwise someone new is asleep inside.
+   */
   createFromStroke(points: readonly Pt[]): StrokeResult {
     const a = analyzeLoop(points);
     if (!a.ok) return { ok: false, message: MESSAGES[a.reason === 'short' ? 'small' : a.reason ?? 'small'] };
@@ -108,14 +113,37 @@ export class BubblesApp {
     const r = radiusAt(d);
     const c = ray.at(d, new THREE.Vector3());
     const [x, y, z] = containPoint(c.x, c.y, c.z, r);
+    const round = (v: number) => Math.round(v * 1000) / 1000;
+    const place = { r: round(r), born: Math.round(this.engine.now), x: round(x), y: round(y), z: round(z) };
+    const caught = this.caughtBy(points, a.centre);
+    if (caught.length > 0) {
+      if (caught.length > MAX_PASSENGERS) this.store.toast(MESSAGES.crowd);
+      const ids = caught.slice(0, MAX_PASSENGERS);
+      const id = this.field.capture(ids);
+      this.store.commit(captureIntoBubble(this.store.doc, ids, { id, ...place }), { hasDrawn: true, selectedId: null });
+      return { ok: true, id };
+    }
     const id = newId('b');
     this.field.expectFresh(id);
-    const round = (v: number) => Math.round(v * 1000) / 1000;
-    this.store.commit(
-      addBubble(this.store.doc, { id, r: round(r), passengers: [this.nextSeeds.shift() ?? newSeed()], born: Math.round(this.engine.now), x: round(x), y: round(y), z: round(z) }),
-      { hasDrawn: true, selectedId: null },
-    );
+    this.store.commit(addBubble(this.store.doc, { id, passengers: [this.nextSeeds.shift() ?? newSeed()], ...place }), { hasDrawn: true, selectedId: null });
     return { ok: true, id };
+  }
+
+  /** Garden friends inside a drawn loop on screen, nearest its middle first. */
+  caughtBy(points: readonly Pt[], centre: Pt): string[] {
+    const cam = this.engine.camera;
+    const rect = this.rect;
+    const v = new THREE.Vector3();
+    return this.field
+      .catchable()
+      .map(({ id, point }) => {
+        v.copy(point).project(cam);
+        const p = { x: rect.left + ((v.x + 1) / 2) * rect.width, y: rect.top + ((1 - v.y) / 2) * rect.height };
+        return { id, p, d: Math.hypot(p.x - centre.x, p.y - centre.y) };
+      })
+      .filter(({ p }) => insideLoop(p, points))
+      .sort((a, b) => a.d - b.d)
+      .map(({ id }) => id);
   }
 
   // --- popping ---------------------------------------------------------------------------------

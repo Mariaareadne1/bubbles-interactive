@@ -11,6 +11,7 @@ BUBBLES is a piece in a family by the same hand — [MEADOW](https://github.com/
 - **Draw a roughly round loop** anywhere over the garden. On release it inflates into a soap bubble the size of your circle, right where you drew it, with someone curled up asleep inside — a **bunny**, a **chick**, a **kitten**, a **flower**, a **strawberry** or a **star**.
 - Bubbles **float** up and drift on a soft, slowly turning breeze, sink a little and rise again, and never leave the air above the garden. They bump softly with a wobble; two that meet slowly **merge** into one bigger bubble (volume conserved) with both passengers snuggled inside. After about two minutes a bubble pops by itself.
 - **Tap a bubble to pop it.** The film bursts open from where you tapped in a ring of colour and a few droplets; the passenger wakes with a start and drifts down — the animals under a petal, the flower, strawberry and star twirling on their own — and lands right under where it was. It stays: the bunny hops about and nibbles, the chick pecks and peeps, the kitten stretches, bats at a butterfly and naps, the flower nods, the strawberry wiggles, the star twinkles. The garden slowly fills up.
+- **Draw round friends on the lawn** and they're caught: the bubble inflates around them and up to four are scooped up inside it together, surprised for a moment, then asleep.
 - **Pop** mode: swipe across bubbles and every one you touch pops.
 - **Click a friend in the garden** to give it a name (🎲 for a suggestion), **Bubble up** (a new bubble forms round it and it floats back up, asleep again), or **Remove** it (it waves and fades). Drag to move it.
 
@@ -31,6 +32,7 @@ Demo (recorded by the app's own recorder; 31 s and ~24 fps because it was record
 | | |
 |---|---|
 | Draw a closed loop | A bubble, with someone asleep inside |
+| Draw a loop round friends on the lawn | They're caught in the bubble (up to four) |
 | Tap / click a bubble | Pop it |
 | Pop tool, then swipe | Pop every bubble the swipe touches |
 | Click a friend in the garden | Name · Bubble up · Remove; drag to move |
@@ -53,7 +55,7 @@ E2E_PROD=1 npm run test:e2e   # the same against the production build
 npm run build
 ```
 
-QA scripts (with the dev server running): `node scripts/shoot.mjs <name> [query] [w] [h] [waitMs]`, `node scripts/closeup.mjs <name> [bubbleId] [fov] [frames] [every]`, `node scripts/pop.mjs <prefix>`, `node scripts/passengers.mjs <prefix>`, `node scripts/perf.mjs`, `node scripts/demo.mjs`, `node scripts/verify-recording.mjs [file]`, `node scripts/gallery.mjs`. URL flags: `?empty`, `?showcase`, `?quality=low`, `?noshell`.
+QA scripts (with the dev server running): `node scripts/shoot.mjs <name> [query] [w] [h] [waitMs]`, `node scripts/closeup.mjs <name> [bubbleId] [fov] [frames] [every]`, `node scripts/pop.mjs <prefix>`, `node scripts/catch.mjs <prefix>`, `node scripts/passengers.mjs <prefix>`, `node scripts/perf.mjs`, `node scripts/demo.mjs`, `node scripts/verify-recording.mjs [file]`, `node scripts/gallery.mjs`. URL flags: `?empty`, `?showcase`, `?quality=low`, `?noshell`.
 
 ## How it's made
 

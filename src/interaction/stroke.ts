@@ -97,3 +97,14 @@ export function analyzeLoop(pts: readonly Pt[]): LoopAnalysis {
   else if (radius < MIN_LOOP_RADIUS) reason = 'small';
   return { ok: !reason, reason, length, centre, radius, roundness, closed };
 }
+
+/** Is a point inside the loop (closed back to its start)? Even–odd rule. */
+export function insideLoop(p: Pt, loop: readonly Pt[]): boolean {
+  let inside = false;
+  for (let i = 0, j = loop.length - 1; i < loop.length; j = i++) {
+    const a = loop[i];
+    const b = loop[j];
+    if (a.y > p.y !== b.y > p.y && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) inside = !inside;
+  }
+  return inside;
+}

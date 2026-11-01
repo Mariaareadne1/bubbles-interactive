@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  addBubble, bubbleUp, cleanName, crowdedOut, defaultDoc, emptyDoc, kindOf, MAX_BUBBLES, MAX_GARDEN, moveGarden, parseDoc,
+  addBubble, bubbleUp, captureIntoBubble, cleanName, crowdedOut, defaultDoc, emptyDoc, kindOf, MAX_BUBBLES, MAX_GARDEN, moveGarden, parseDoc,
   popBubble, removeGarden, renameGarden, replaceBubbles, showcaseDoc, suggestName, withPositions, type BubblesDoc, type GardenRecord,
 } from '../../src/state/document';
 import { amend, canRedo, canUndo, commit, createHistory, redo, undo } from '../../src/state/history';
@@ -53,6 +53,16 @@ describe('the document', () => {
     const next = bubbleUp(doc, 'g', { id: 'nb', r: 0.62, born: 5, x: 0, y: 1, z: 1 });
     expect(next.garden).toEqual([]);
     expect(next.bubbles[0]).toMatchObject({ id: 'nb', passengers: [42], names: ['Mochi'] });
+  });
+
+  it('a loop drawn round friends catches them all in one bubble, names and all, up to four', () => {
+    const doc = { ...emptyDoc(), garden: ['a', 'b', 'c', 'd', 'e', 'f'].map((id, i) => rec(id, { seed: 10 + i, ...(i === 1 ? { name: 'Pip' } : {}) })) };
+    const next = captureIntoBubble(doc, ['b', 'a', 'c', 'd', 'e'], { id: 'nb', r: 1, born: 5, x: 0, y: 1.5, z: 1 });
+    expect(next.bubbles).toHaveLength(1);
+    expect(next.bubbles[0].passengers).toEqual([11, 10, 12, 13]);
+    expect(next.bubbles[0].names).toEqual(['Pip', '', '', '']);
+    expect(next.garden.map((g) => g.id)).toEqual(['e', 'f']);
+    expect(captureIntoBubble(doc, ['nobody'], { id: 'x', r: 1, born: 5, x: 0, y: 1.5, z: 1 })).toBe(doc);
   });
 
   it('renames, moves and removes immutably, and is a no-op when nothing changes', () => {

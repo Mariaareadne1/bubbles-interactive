@@ -76,7 +76,7 @@ export function Chrome({ app, onCapture, onRecord }: ChromeProps) {
 
       {panel === 'help' && (
         <section className="panel help" aria-label="How to play">
-          <p className="lede">Draw a circle over the garden and it becomes a soap bubble with someone tiny asleep inside — a bunny, a chick, a kitten, a flower, a strawberry or a star. It floats away on the breeze. Tap it to pop it: whoever was inside wakes up and drifts down on a petal to stay in the garden. With Pop, swipe across bubbles to pop each one you touch. Click a friend in the garden to name it, bubble it back up, or say goodbye; drag to move it.</p>
+          <p className="lede">Draw a circle over the garden and it becomes a soap bubble with someone tiny asleep inside — a bunny, a chick, a kitten, a flower, a strawberry or a star. It floats away on the breeze. Draw a circle round friends already on the lawn and they’re caught inside it instead — up to four to a bubble. Tap a bubble to pop it: whoever was inside wakes up and drifts down on a petal to stay in the garden. With Pop, swipe across bubbles to pop each one you touch. Click a friend in the garden to name it, bubble it back up, or say goodbye; drag to move it.</p>
           <dl>
             {SHORTCUTS.map(([what, key]) => (
               <div key={what}><dt>{what}</dt><dd>{key}</dd></div>
