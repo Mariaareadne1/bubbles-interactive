@@ -55,13 +55,13 @@ describe('the document', () => {
     expect(next.bubbles[0]).toMatchObject({ id: 'nb', passengers: [42], names: ['Mochi'] });
   });
 
-  it('a loop drawn round friends catches them all in one bubble, names and all, up to four', () => {
+  it('a loop drawn round friends catches every one of them in one bubble, names and all', () => {
     const doc = { ...emptyDoc(), garden: ['a', 'b', 'c', 'd', 'e', 'f'].map((id, i) => rec(id, { seed: 10 + i, ...(i === 1 ? { name: 'Pip' } : {}) })) };
     const next = captureIntoBubble(doc, ['b', 'a', 'c', 'd', 'e'], { id: 'nb', r: 1, born: 5, x: 0, y: 1.5, z: 1 });
     expect(next.bubbles).toHaveLength(1);
-    expect(next.bubbles[0].passengers).toEqual([11, 10, 12, 13]);
-    expect(next.bubbles[0].names).toEqual(['Pip', '', '', '']);
-    expect(next.garden.map((g) => g.id)).toEqual(['e', 'f']);
+    expect(next.bubbles[0].passengers).toEqual([11, 10, 12, 13, 14]);
+    expect(next.bubbles[0].names).toEqual(['Pip', '', '', '', '']);
+    expect(next.garden.map((g) => g.id)).toEqual(['f']);
     expect(captureIntoBubble(doc, ['nobody'], { id: 'x', r: 1, born: 5, x: 0, y: 1.5, z: 1 })).toBe(doc);
   });
 
@@ -116,7 +116,7 @@ describe('loading untrusted scenes', () => {
     expect(doc.bubbles).toHaveLength(MAX_BUBBLES);
     const [a, b] = doc.bubbles;
     expect(a.r).toBe(R_MAX);
-    expect(a.passengers).toHaveLength(4);
+    expect(a.passengers).toHaveLength(6);
     expect(a.born).toBe(1000);
     expect(a.y).toBe(0);
     expect(b.id).not.toBe('x');

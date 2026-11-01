@@ -14,7 +14,6 @@ import { excite, type Mode } from './wobble';
 export const STEP = 1 / 60;
 export const R_MIN = 0.32;
 export const R_MAX = 1.6;
-export const MAX_PASSENGERS = 4;
 /** Approach speed (m/s) below which touching bubbles cling and then merge. */
 export const V_MERGE = 0.22;
 /** How long two bubbles must stay touching before they merge (s). */
@@ -210,7 +209,7 @@ export class BubbleSim {
         }
         const approach = -((b.vx - a.vx) * nx + (b.vy - a.vy) * ny + (b.vz - a.vz) * nz);
         const key = `${a.id}|${b.id}`;
-        const canMerge = a.inflate >= 1 && b.inflate >= 1 && mergedRadius(a.r, b.r) <= R_MAX && a.passengers.length + b.passengers.length <= MAX_PASSENGERS;
+        const canMerge = a.inflate >= 1 && b.inflate >= 1 && mergedRadius(a.r, b.r) <= R_MAX;
         if (canMerge && approach < V_MERGE) {
           // meeting slowly: they cling, settle into each other, then become one
           touching.add(key);

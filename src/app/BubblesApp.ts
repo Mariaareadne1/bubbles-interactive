@@ -8,7 +8,7 @@ import {
 import { saveDoc } from '../state/persistence';
 import { analyzeLoop, insideLoop, type Pt } from '../interaction/stroke';
 import { distanceAtHeight, groundAt, raycaster, rayFromClient } from '../interaction/rays';
-import { containPoint, MAX_PASSENGERS, R_MAX, R_MIN } from '../bubble/sim';
+import { containPoint, R_MAX, R_MIN } from '../bubble/sim';
 
 /**
  * Application commands. The UI and pointer input call these; they turn intent
@@ -25,7 +25,6 @@ export const MESSAGES = {
   thin: 'Draw a rounder loop — bubbles are round.',
   paper: 'Draw over the garden.',
   full: 'The air is full of bubbles — pop one first.',
-  crowd: 'Only four fit in one bubble — the rest stay put.',
 } as const;
 
 /** How far above the ground a new bubble's lowest point sits (m). */
@@ -88,7 +87,7 @@ export class BubblesApp {
 
   /**
    * A finished loop: it becomes a bubble of the drawn size, where it was drawn.
-   * Drawn round friends on the lawn, it catches them (up to four) and they
+   * Drawn round friends on the lawn, it catches every one of them and they
    * float up inside it; otherwise someone new is asleep inside.
    */
   createFromStroke(points: readonly Pt[]): StrokeResult {
@@ -117,10 +116,8 @@ export class BubblesApp {
     const place = { r: round(r), born: Math.round(this.engine.now), x: round(x), y: round(y), z: round(z) };
     const caught = this.caughtBy(points, a.centre);
     if (caught.length > 0) {
-      if (caught.length > MAX_PASSENGERS) this.store.toast(MESSAGES.crowd);
-      const ids = caught.slice(0, MAX_PASSENGERS);
-      const id = this.field.capture(ids);
-      this.store.commit(captureIntoBubble(this.store.doc, ids, { id, ...place }), { hasDrawn: true, selectedId: null });
+      const id = this.field.capture(caught);
+      this.store.commit(captureIntoBubble(this.store.doc, caught, { id, ...place }), { hasDrawn: true, selectedId: null });
       return { ok: true, id };
     }
     const id = newId('b');

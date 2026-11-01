@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { BubbleSim, containPoint, idHash, INFLATE, lifeFor, type SimBubble, type SimEvent } from './sim';
 import { BubbleView } from './BubbleView';
 import { CharView, heightOf } from '../char/CharView';
+import { riderSlot } from './riders';
 import { loadShapes, type ShapeSet } from '../char/cache';
 import { asleepPose, fallPose, gardenPose, landingTime, leavePose, LEAVE_TIME, restPose, type Pose } from '../char/behaviors';
 import type { Kind } from '../char/shapes';
@@ -311,16 +312,11 @@ export class BubbleField {
     lb.view.inside.rotation.y = t * 0.22 + b.seed * 6.283;
     lb.view.inside.updateWorldMatrix(true, false);
     lb.riders.forEach((rider, i) => {
-      const kind = rider.view.kind;
-      const h = heightOf(kind);
-      const fit = (r * (n > 1 ? 0.95 : 1.25)) / h;
-      const s = Math.max(0.05, Math.min(CHAR_SCALE, fit));
-      const a = (i / n) * Math.PI * 2;
-      const spread = n > 1 ? r * 0.32 : 0;
+      const slot = riderSlot(i, n, r, heightOf(rider.view.kind), CHAR_SCALE);
+      const s = slot.scale;
       const root = rider.view.root;
-      root.position.set(Math.cos(a) * spread, -h * s * 0.45 + Math.sin(t * 0.9 + i) * 0.02, Math.sin(a) * spread);
-      // they snuggle: facing each other a little
-      root.rotation.set(0, n > 1 ? -a + Math.PI + 0.6 : 0.4, 0);
+      root.position.set(slot.x, slot.y + Math.sin(t * 0.9 + i) * 0.02 * Math.min(1, s), slot.z);
+      root.rotation.set(0, slot.yaw, 0);
       root.scale.setScalar(s);
       rider.view.setInBubble(1);
       const g = rider.gather;
@@ -446,8 +442,9 @@ export class BubbleField {
       root.updateMatrixWorld(true);
       const wp = root.getWorldPosition(new THREE.Vector3());
       const scale = root.getWorldScale(tmp).x;
-      const a = (i / Math.max(1, n)) * Math.PI * 2 + 0.4;
-      const spread = n > 1 ? 0.45 : 0;
+      // a crowd lands in a little sunflower spiral round the spot, so nobody lands on anybody
+      const a = i * 2.39996 + 0.4;
+      const spread = n > 1 ? 0.42 * Math.sqrt(i + 0.6) : 0;
       const [lx, lz] = nearestOpen(b.x + Math.cos(a) * spread, b.z + Math.sin(a) * spread, 0.3);
       const gid = newId('g');
       const heading = -Math.PI / 2 + (idHash(gid) - 0.5) * 1.4;

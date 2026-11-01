@@ -91,6 +91,15 @@ describe('the float', () => {
     expect(s.bubbles.get('fa')!.modes.length).toBeGreaterThan(0);
   });
 
+  it('merges crowded bubbles too — there is no limit to who can share one', () => {
+    const s = new BubbleSim();
+    s.add(bubble('ca', -0.62, 2.4, 0.5, 0.6, [1, 2, 3, 4, 5]));
+    s.add(bubble('cb', 0.62, 2.4, 0.5, 0.6, [6, 7, 8]));
+    run(s, 3);
+    expect(s.bubbles.size).toBe(1);
+    expect([...s.bubbles.values()][0].passengers).toHaveLength(8);
+  });
+
   it('never merges past the largest bubble', () => {
     const s = new BubbleSim();
     s.add(bubble('ba', -1.3, 3, 0, 1.4));

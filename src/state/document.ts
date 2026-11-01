@@ -1,6 +1,6 @@
 import { TILE } from '../scene/garden';
 import { KINDS, type Kind } from '../char/shapes';
-import { R_MAX, R_MIN, MAX_PASSENGERS } from '../bubble/sim';
+import { R_MAX, R_MIN } from '../bubble/sim';
 
 /**
  * The scene document: bubbles in the air and passengers in the garden.
@@ -13,6 +13,11 @@ export const VERSION = 1;
 export const MAX_BUBBLES = 16;
 export const MAX_GARDEN = 24;
 export const NAME_MAX = 16;
+/**
+ * No limit on who can share a bubble; this only bounds untrusted files. Everyone
+ * alive at once is at most the garden plus one newcomer per bubble.
+ */
+export const PASSENGERS_SANITY = 64;
 
 export interface BubbleRecord {
   readonly id: string;
@@ -142,7 +147,7 @@ export function moveGarden(doc: BubblesDoc, id: string, x: number, z: number, he
  * one (Bubble up) or a whole group a loop was drawn around. Names travel with them.
  */
 export function captureIntoBubble(doc: BubblesDoc, ids: readonly string[], bubble: Omit<BubbleRecord, 'passengers' | 'names'>): BubblesDoc {
-  const caught = ids.map((id) => findGarden(doc, id)).filter((g): g is GardenRecord => !!g).slice(0, MAX_PASSENGERS);
+  const caught = ids.map((id) => findGarden(doc, id)).filter((g): g is GardenRecord => !!g);
   if (caught.length === 0 || doc.bubbles.length >= MAX_BUBBLES) return doc;
   const names = caught.map((g) => g.name ?? '');
   const rec: BubbleRecord = { ...bubble, passengers: caught.map((g) => g.seed), ...(names.some(Boolean) ? { names } : {}) };
@@ -227,7 +232,7 @@ export function parseDoc(input: unknown, now = Date.now()): BubblesDoc | null {
   for (const raw of input.bubbles) {
     if (bubbles.length >= MAX_BUBBLES) break;
     if (!isObj(raw) || !finite(raw.r) || !finite(raw.x) || !finite(raw.y) || !finite(raw.z) || !Array.isArray(raw.passengers)) continue;
-    const passengers = raw.passengers.map(seedOk).filter((s): s is number => s !== null).slice(0, MAX_PASSENGERS);
+    const passengers = raw.passengers.map(seedOk).filter((s): s is number => s !== null).slice(0, PASSENGERS_SANITY);
     if (passengers.length === 0) continue;
     const rawNames = Array.isArray(raw.names) ? raw.names : [];
     const names = passengers.map((_, i) => (typeof rawNames[i] === 'string' ? cleanName(rawNames[i] as string) : ''));

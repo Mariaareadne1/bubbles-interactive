@@ -167,6 +167,38 @@ test.describe('BUBBLES', () => {
     expect(pageErrors(page)).toEqual([]);
   });
 
+  test('no limit: a big circle round seven friends catches all seven, and they all land again when it pops', async ({ page }) => {
+    await openGarden(page);
+    await page.evaluate(() => {
+      const kinds = ['bunny', 'chick', 'kitten', 'flower', 'strawberry', 'star', 'bunny'] as const;
+      window.__bubbles!.app.loadDoc({
+        version: 1,
+        bubbles: [],
+        garden: kinds.map((kind, i) => ({ id: `m${i}`, kind, seed: 100 + i, x: -0.9 + (i % 4) * 0.6, z: 1.4 + Math.floor(i / 4) * 0.7, heading: -1.5 })),
+      });
+    });
+    await advance(page, 0.5);
+    const pts = await Promise.all([...Array(7)].map((_, i) => friendScreen(page, `m${i}`)));
+    const cx = pts.reduce((s, p) => s + p.x, 0) / 7;
+    const cy = pts.reduce((s, p) => s + p.y, 0) / 7;
+    const r = Math.max(...pts.map((p) => Math.hypot(p.x - cx, p.y - cy))) + 50;
+    const id = await drawBubble(page, { x: cx, y: cy }, r);
+    expect(id).not.toBeNull();
+    expect((await page.evaluate(() => window.__bubbles!.store.doc.bubbles[0].passengers)).length).toBe(7);
+    expect(await gardenIds(page)).toEqual([]);
+    await advance(page, 2);
+    await page.evaluate((i) => window.__bubbles!.app.pop(i), id!);
+    expect(await gardenIds(page)).toHaveLength(7);
+    await advance(page, 12);
+    const spots = (await snapshot(page)).garden;
+    expect(spots.every((g) => g.mode === 'home')).toBe(true);
+    // a sunflower spiral: nobody lands on top of anybody
+    for (let i = 0; i < spots.length; i++) for (let j = i + 1; j < spots.length; j++) {
+      expect(Math.hypot(spots[i].x - spots[j].x, spots[i].z - spots[j].z)).toBeGreaterThan(0.2);
+    }
+    expect(pageErrors(page)).toEqual([]);
+  });
+
   test('dragging a passenger moves it', async ({ page }) => {
     await openGarden(page, 'showcase');
     await advance(page, 0.5);
