@@ -9,7 +9,7 @@
 | 4. Drawing, floating, merging, popping | Done |
 | 5. Selection, actions, Pop mode, undo/redo, persistence, capture, mobile | Done |
 | 6. Polish, demo, docs | Done — `docs/media/`, `README.md`, `CASE_STUDY.md` |
-| Deploy to Vercel | Not done — waiting for the owner's go-ahead |
+| Deploy to Vercel | Done 2026-11-01 — https://bubbles-interactive.vercel.app |
 
 ## Known gaps
 

@@ -1,5 +1,7 @@
 # BUBBLES
 
+**Live: https://bubbles-interactive.vercel.app**
+
 **Draw a circle over a pastel garden. It becomes a shimmering soap bubble with something tiny asleep inside, and it floats away. Tap it and it pops — and whoever was inside drifts down on a petal.**
 
 ![A garden with bubbles drifting over it and little friends on the lawn](docs/media/01-garden.jpg)
